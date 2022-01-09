@@ -31,4 +31,3 @@ contract Election{
     }
 
 }
-//sjdndodncdn
