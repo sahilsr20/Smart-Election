@@ -4,29 +4,28 @@ pragma solidity >=0.5.0 <0.9.0;
 contract Election{
     address administrator;
 
-    struct voter{
-        address voterAddress;
-        bool hasVoted;
-    }
-
     struct candidate{
         bool exists;
         uint votes;
     }
 
-    mapping (address =>voter) voterMapping;
+    mapping (address =>bool) voterVoted;
     mapping (address=>candidate) candidateMapping;
+    mapping (address=>bool) candidateExists;
+    
 
-    function addCandidate(address candidateAddr)public {
-        require(candidateMapping[candidateAddr].exists==false);
-        candidateMapping[candidateAddr].votes=0;
-        candidateMapping[candidateAddr].exists=true;
-        voterMapping[candidateAddr].hasVoted=true;
+    function _addCandidate()private pure returns( candidate memory) {
+        return  candidate(true,0);
     }
-
+    function AddCandidate(address candidateAddr)public {
+        require(!candidateExists[candidateAddr]);
+         candidateMapping[candidateAddr]=_addCandidate();
+         candidateExists[candidateAddr]=true;
+    }
     function Vote(address from , address to) public{
-        require(voterMapping[from].hasVoted==false);
-        require(candidateMapping[to].exists);
+        require(!voterVoted[from]);
+        require(candidateExists[to]);
+        voterVoted[from]=true;
         candidateMapping[to].votes++;
     }
 
