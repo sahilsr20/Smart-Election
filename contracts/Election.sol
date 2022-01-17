@@ -1,33 +1,39 @@
-//SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0 <0.9.0;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.4.22 <0.9.0;
 
 contract Election{
-    address administrator;
+    address chairPerson;
 
-    struct voter{
-        address voterAddress;
+    struct Voter{
+        address ID;
+        bool hasRightToVote;
         bool hasVoted;
+        uint8 vote;
     }
 
-    struct candidate{
-        bool exists;
-        uint votes;
+    struct Proposal{
+        uint8 voteCount;
     }
 
-    mapping (address =>voter) voterMapping;
-    mapping (address=>candidate) candidateMapping;
-
-    function addCandidate(address candidateAddr)public {
-        require(candidateMapping[candidateAddr].exists==false);
-        candidateMapping[candidateAddr].votes=0;
-        candidateMapping[candidateAddr].exists=true;
-        voterMapping[candidateAddr].hasVoted=true;
+    mapping(address=>Voter) voters;
+    Proposal[] proposals;
+   
+    function vote(uint8 toProposal) public {
+        Voter storage sender = voters[msg.sender];
+        require(sender.hasRightToVote && !sender.hasVoted 
+        && toProposal<proposals.length);
+        sender.hasVoted = true;
+        sender.vote=toProposal;
+        proposals[toProposal].voteCount++;
     }
-
-    function Vote(address from , address to) public{
-        require(voterMapping[from].hasVoted==false);
-        require(candidateMapping[to].exists);
-        candidateMapping[to].votes++;
+    function winningProposal() public view returns (uint8 _winningProposal) {
+        uint8 winningVoteCount=2;
+        for (uint8 index = 0; index < proposals.length; index++) {
+            if(proposals[index].voteCount>winningVoteCount){
+                winningVoteCount = proposals[index].voteCount;
+                _winningProposal = index;
+            }
+        }
+        return _winningProposal;
     }
-
 }
